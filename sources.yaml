@@ -1,0 +1,34 @@
+# Danh sách nguồn. Thêm/bớt nguồn ở đây, không cần sửa code.
+# - Nguồn RSS: chỉ cần name + url.
+# - Nguồn KHÔNG có RSS: thêm  type: html  (bot đọc trang rồi lấy các link bài viết).
+# - province: tỉnh mặc định của nguồn; local: true = bài của báo địa phương, nếu bài không nêu tỉnh khác
+#   thì coi sự kiện thuộc tỉnh đó.
+# Ngoài ra bot tự thêm 8 nguồn Google News + 8 nguồn Bing News (mỗi tỉnh 1 truy vấn).
+# Chạy `python main.py check` để biết nguồn nào đang hoạt động (nguồn LỖI hoặc 0 bài thì xóa/sửa link).
+# Đã loại các nguồn không lấy được bài (VietnamPlus, VOV, cổng UBND, Sở VHTTDL, Ticketbox, VinWonders, Klook, Trip.com).
+sources:
+  # ---- Báo điện tử lớn (RSS) ----
+  - {name: "VnExpress - Du lịch",   url: "https://vnexpress.net/rss/du-lich.rss"}
+  - {name: "VnExpress - Giải trí",  url: "https://vnexpress.net/rss/giai-tri.rss"}
+  - {name: "VnExpress - Thể thao",  url: "https://vnexpress.net/rss/the-thao.rss"}
+  - {name: "Tuổi Trẻ - Du lịch",    url: "https://tuoitre.vn/rss/du-lich.rss"}
+  - {name: "Tuổi Trẻ - Văn hóa",    url: "https://tuoitre.vn/rss/van-hoa.rss"}
+  - {name: "Thanh Niên - Du lịch",  url: "https://thanhnien.vn/rss/du-lich.rss"}
+  - {name: "Thanh Niên - Văn hóa",  url: "https://thanhnien.vn/rss/van-hoa.rss"}
+
+  # ---- Báo điện tử lớn (quét trang chủ) ----
+  - {name: "Báo Tin tức (TTXVN)",   url: "https://baotintuc.vn/",          type: html}
+
+  # ---- Báo địa phương có RSS ----
+  - {name: "Báo Tây Ninh - Văn hóa",   url: "https://baotayninh.vn/rss/news/van-hoa.rss",   province: "Tây Ninh", local: true}
+  - {name: "Báo Tây Ninh - Du lịch",   url: "https://baotayninh.vn/rss/news/du-lich.rss",   province: "Tây Ninh", local: true}
+  - {name: "Báo Tây Ninh - Sự kiện",   url: "https://baotayninh.vn/rss/news/van-de-su-kien.rss", province: "Tây Ninh", local: true}
+
+  # ---- Báo địa phương không có RSS (quét trang chủ) ----
+  - {name: "SGGP (TP.HCM)",           url: "https://www.sggp.org.vn/",       type: html, province: "TP. Hồ Chí Minh"}
+  - {name: "Báo Đồng Nai",            url: "https://baodongnai.com.vn/",     type: html, province: "Đồng Nai", local: true}
+  - {name: "Báo An Giang",            url: "https://baoangiang.com.vn/",     type: html, province: "An Giang", local: true}
+  - {name: "Báo Đồng Tháp",           url: "https://baodongthap.vn/",        type: html, province: "Đồng Tháp", local: true}
+  - {name: "Báo Vĩnh Long",           url: "https://baovinhlong.com.vn/",    type: html, province: "Vĩnh Long", local: true}
+  - {name: "Báo Cần Thơ",             url: "https://baocantho.com.vn/",      type: html, province: "Cần Thơ", local: true}
+  - {name: "Báo Cà Mau",              url: "https://baocamau.vn/",           type: html, province: "Cà Mau", local: true}

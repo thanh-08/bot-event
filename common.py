@@ -3,6 +3,9 @@ from datetime import date, datetime, timezone, timedelta
 
 VN_TZ = timezone(timedelta(hours=7))
 BIG_ATTENDANCE = 10000
+# Chỉ hiển thị/cảnh báo sự kiện có quy mô nêu rõ từ ngưỡng này trở lên (bản tin, lệnh, Excel, cảnh báo).
+# Đặt 0 để hiển thị tất cả sự kiện như trước. Sự kiện không nêu số người vẫn được lưu nhưng bị ẩn.
+MIN_ATTENDANCE = 10000
 
 
 def now_vn():

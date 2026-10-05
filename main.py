@@ -5,6 +5,8 @@ Cách chạy:
   python main.py test     gửi 1 tin nhắn thử để kiểm tra token/chat_id
   python main.py run      thu thập + cảnh báo + trả lời lệnh + gửi bản tin 07:00 (mặc định)
   python main.py digest   gửi bản tin ngay lập tức
+  python main.py export week [YYYY-MM-DD]   xuất Excel 7 ngày kể từ ngày đó (mặc định hôm nay)
+  python main.py export month [YYYY-MM]     xuất Excel cả tháng (không ghi tháng: 30 ngày tới)
 """
 import os, sys, traceback
 from datetime import timedelta
@@ -12,7 +14,7 @@ from datetime import timedelta
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 
 from common import (load_env, now_vn, has_event_kw, has_date_hint, find_province, is_big, strip_accents, PROVINCES)  # noqa: E402
-import collectors, extract, db, notify  # noqa: E402
+import collectors, extract, db, notify, report  # noqa: E402
 
 MAX_EXAMINE_PER_RUN = 80      # giới hạn số bài mở ra đọc mỗi lần chạy (để chạy nhanh)
 MAX_LLM_PER_RUN = 40          # giới hạn số bài gọi AI mỗi lần chạy (để chi phí gần 0)
@@ -20,7 +22,8 @@ GN_COOLDOWN_HOURS = 3        # nghỉ giải mã Google News bao lâu sau khi b�
 FAIL_ALERT_AT = 3             # báo khi một nguồn lỗi liên tiếp 3 lần
 
 HELP = ("Lệnh hỗ trợ:\n/homnay - sự kiện hôm nay\n/tuannay - 7 ngày tới\n"
-        "/tinh <tên tỉnh> - lọc theo tỉnh (vd: /tinh Cần Thơ)\n/sukien <từ khóa> - tìm sự kiện (vd: /sukien pháo hoa)")
+        "/tinh <tên tỉnh> - lọc theo tỉnh (vd: /tinh Cần Thơ)\n/sukien <từ khóa> - tìm sự kiện (vd: /sukien pháo hoa)\n"
+        "/excel - file Excel 7 ngày tới\n/excel thang - file Excel 30 ngày tới (hoặc /excel thang 2026-11 cho cả tháng 11/2026)")
 
 
 # ---------------------------------------------------------------- thu thập
@@ -202,6 +205,21 @@ def answer(c, text):
     return HELP
 
 
+def send_excel(c, chat_id, text):
+    """/excel [tuan|thang] [ngày hoặc tháng]: tạo file Excel và gửi vào cuộc trò chuyện."""
+    import tempfile
+    parts = [strip_accents(x) for x in text.split()[1:]]
+    kind = "month" if parts and parts[0] in ("thang", "month") else "week"
+    arg = parts[1] if len(parts) > 1 else (parts[0] if parts and parts[0] not in ("tuan", "week", "thang", "month") else "")
+    try:
+        path = os.path.join(tempfile.mkdtemp(), f"su_kien_{'thang' if kind == 'month' else 'tuan'}.xlsx")
+        path, n = report.build(kind, arg, out_path=path, c=c)
+    except ValueError as e:
+        notify.send(chat_id, f"Không tạo được file: {e}")
+        return
+    notify.send_document(chat_id, path, f"Danh sách sự kiện ({n} sự kiện). Mở bằng Excel.")
+
+
 def handle_commands(c):
     offset = int(db.get_meta(c, "tg_offset") or 0)
     data = notify.tg("getUpdates", offset=offset, timeout=0)
@@ -212,7 +230,10 @@ def handle_commands(c):
         if not text.startswith("/"):
             continue
         try:
-            notify.send(msg["chat"]["id"], answer(c, text))
+            if strip_accents(text.split()[0].split("@")[0]) == "/excel":
+                send_excel(c, msg["chat"]["id"], text)
+            else:
+                notify.send(msg["chat"]["id"], answer(c, text))
         except Exception as e:
             print(f"Lỗi trả lời lệnh {text!r}: {e}")
 
@@ -234,6 +255,15 @@ def main():
         return check_sources()
     if mode == "test":
         notify.broadcast("Bot sự kiện miền Nam đã kết nối thành công. Gõ /help để xem lệnh.")
+        return
+    if mode == "export":
+        args = sys.argv[2:]
+        kind = args[0] if args else "week"
+        try:
+            path, n = report.build(kind, args[1] if len(args) > 1 else None)
+        except ValueError as e:
+            sys.exit(f"Lỗi: {e}")
+        print(f"Đã xuất {n} sự kiện ra file: {path}")
         return
     c = db.conn()
     errors = 0

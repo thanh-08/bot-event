@@ -15,6 +15,8 @@ bản tin 07:00 mỗi ngày (7 ngày tới), cảnh báo riêng khi có sự ki�
 | Cảnh báo sự kiện lớn | Gửi ngay khi gặp sự kiện từ 10.000 người, hoặc có pháo hoa/đại nhạc hội; mỗi sự kiện chỉ báo một lần |
 | Lệnh tra cứu | `/homnay`, `/tuannay`, `/tinh <tỉnh>`, `/sukien <từ khóa>` |
 | (Cộng điểm) AI trích xuất | Gemini (có gói miễn phí) |
+| (Cộng điểm) Mức ưu tiên đối với mạng lưới | Mỗi sự kiện được gắn CAO / TB / THẤP theo quy mô và địa điểm, kèm lý do (xem mục *Mức ưu tiên đối với mạng lưới*) |
+| (Cộng điểm) Xuất Excel theo tuần/tháng | `python main.py export week|month` hoặc lệnh `/excel` trên Telegram (xem mục *Xuất Excel*) |
 
 ## Luồng hoạt động
 
@@ -100,15 +102,42 @@ Mỗi lượt chạy thu thập tin trước rồi mới gửi bản tin, nên b
 | `/tuannay` | Sự kiện trong 7 ngày tới |
 | `/tinh <tên tỉnh>` | Sự kiện của một tỉnh trong 60 ngày tới, ví dụ `/tinh Cần Thơ` (gõ có dấu hay không dấu đều được) |
 | `/sukien <từ khóa>` | Tìm theo từ khóa, ví dụ `/sukien pháo hoa` |
+| `/excel` | Gửi file Excel các sự kiện 7 ngày tới |
+| `/excel thang` | File Excel 30 ngày tới; `/excel thang 2026-11` cho cả tháng 11/2026 |
 
 Trên GitHub Actions, lệnh được trả lời ở lượt chạy kế tiếp (độ trễ tối đa khoảng 30 phút, có thể lâu hơn nếu dịch vụ hẹn giờ gặp sự cố).
+
+## Mức ưu tiên đối với mạng lưới
+
+Mỗi sự kiện được gắn **CAO / TB (trung bình) / THẤP** theo quy mô và địa điểm, kèm dòng "Ưu tiên mạng" nêu lý do.
+
+- Điểm theo quy mô: số người (từ 1.000, 5.000, 10.000, 20.000), có pháo hoa, có đại nhạc hội, kéo dài từ 3 ngày,
+  lễ hội truyền thống lớn (Vía Bà, Ok Om Bok, Nghinh Ông, lễ hội Nguyễn Trung Trực…).
+- Điểm theo địa điểm: sân bay/cảng, khu du lịch đông khách, sân vận động, quảng trường, phố đi bộ… và TP. Hồ Chí Minh.
+- CAO: sự kiện từ 10.000 người, có pháo hoa hoặc đại nhạc hội, hoặc tổng điểm từ 5. TB: từ 3 đến 4 điểm. THẤP: còn lại.
+
+Đây là quy tắc tự đặt. Muốn chỉnh danh sách địa điểm trọng điểm hoặc ngưỡng điểm, sửa `HOTSPOTS`, `BIG_FESTIVALS`,
+`PRIORITY_HIGH`, `PRIORITY_MID` trong `src/common.py`.
+
+## Xuất Excel theo tuần/tháng
+
+```bash
+python main.py export week              # 7 ngày tới, file nằm trong thư mục exports/
+python main.py export week 2026-10-12   # 7 ngày kể từ ngày chỉ định
+python main.py export month             # 30 ngày tới
+python main.py export month 2026-11     # cả tháng 11/2026
+```
+
+File có 2 sheet: *Danh sách sự kiện* (lọc được, tô màu theo mức ưu tiên, có link bài gốc) và *Tổng hợp* (số sự kiện
+theo tỉnh và mức ưu tiên, kèm cách xếp mức ưu tiên). Lệnh `/excel` trên Telegram làm điều tương tự và gửi file vào
+cuộc trò chuyện.
 
 ## Cấu hình
 
 | Cần chỉnh | Ở đâu |
 |---|---|
 | Nguồn tin | `sources.yaml` (`type: html` cho báo không có RSS) |
-| Từ khóa lọc sự kiện, tên tỉnh và địa danh, ngưỡng sự kiện lớn | `src/common.py` |
+| Từ khóa lọc sự kiện, tên tỉnh và địa danh, ngưỡng sự kiện lớn, địa điểm trọng điểm và ngưỡng ưu tiên | `src/common.py` |
 | Mô hình AI | biến `GEMINI_MODEL` (danh sách cách nhau dấu phẩy; mặc định `gemini-3.5-flash-lite,gemini-3.8-flash`) |
 | Số bài xử lý mỗi lượt | `MAX_EXAMINE_PER_RUN`, `MAX_LLM_PER_RUN` trong `main.py` |
 
@@ -136,12 +165,13 @@ Trên GitHub Actions, file này được commit về repo sau mỗi lượt đ�
 ## Cấu trúc thư mục
 
 ```
-main.py                 điểm vào: run, check, test, digest, listen, export
+main.py                 điểm vào: run, check, test, digest, export
 src/common.py           tỉnh, từ khóa, mức ưu tiên
 src/collectors.py       đọc RSS / quét trang / Google News
 src/extract.py          trích xuất bằng AI (có dự phòng quy tắc đơn giản)
 src/db.py               SQLite, khử trùng
-src/notify.py           gửi tin Telegram, định dạng bản tin
+src/notify.py           gửi tin và file Telegram, định dạng bản tin
+src/report.py           xuất Excel theo tuần/tháng
 sources.yaml            danh sách nguồn
 data/events.db          cơ sở dữ liệu
 .github/workflows/      lịch chạy GitHub Actions

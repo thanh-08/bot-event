@@ -3,3 +3,4 @@ feedparser>=6.0
 beautifulsoup4>=4.12
 pyyaml>=6.0
 lunardate>=0.2
+openpyxl>=3.1

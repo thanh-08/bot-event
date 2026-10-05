@@ -1,7 +1,7 @@
 import os, json
 from datetime import date
 import requests
-from common import priority
+from common import priority_info
 
 WEEKDAYS = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
 
@@ -34,6 +34,17 @@ def send(chat_id, text):
         tg("sendMessage", chat_id=chat_id, text=p, disable_web_page_preview=True)
 
 
+def send_document(chat_id, path, caption=""):
+    """Gửi một file (vd: Excel) qua Telegram. Không để lộ token trong thông báo lỗi."""
+    token = os.environ["TELEGRAM_TOKEN"]
+    with open(path, "rb") as f:
+        r = requests.post(f"https://api.telegram.org/bot{token}/sendDocument",
+                          data={"chat_id": chat_id, "caption": caption[:1000]},
+                          files={"document": (os.path.basename(path), f)}, timeout=60)
+    if r.status_code != 200:
+        raise RuntimeError(f"Telegram sendDocument lỗi {r.status_code}: {r.text[:200]}")
+
+
 def broadcast(text):
     for cid in chat_ids():
         try:
@@ -53,7 +64,8 @@ def fmt_date(ev):
 
 
 def format_event(ev):
-    lines = [f"[{priority(ev)}] {fmt_date(ev)} · {ev['province']}", ev["name"]]
+    label, _, why = priority_info(ev)
+    lines = [f"[{label}] {fmt_date(ev)} · {ev['province']}", ev["name"]]
     if ev.get("time_text"):
         lines.append(f"Giờ: {ev['time_text']}")
     if ev.get("venue"):
@@ -67,6 +79,8 @@ def format_event(ev):
         scale.append("có đại nhạc hội")
     if scale:
         lines.append("Quy mô: " + " · ".join(scale))
+    if why and label != "THẤP":
+        lines.append("Ưu tiên mạng: " + "; ".join(why))
     urls = json.loads(ev["urls"]) if isinstance(ev.get("urls"), str) else (ev.get("urls") or [])
     if urls:
         lines.append(f"Nguồn: {urls[0]}")

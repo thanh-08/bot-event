@@ -46,7 +46,8 @@ EVENT_KEYWORDS = [
     "lễ hội", "vía bà", "ok om bok", "chôl chnăm thmây", "cúng đình", "khai mạc", "bế mạc",
     "pháo hoa", "countdown", "đại nhạc hội", "đêm nhạc", "concert", "festival", "hội chợ",
     "triển lãm", "giải chạy", "marathon", "lễ kỷ niệm", "đua ghe", "ngày hội", "hội nghị",
-    "nghỉ lễ", "kỳ nghỉ", "dịp lễ", "tết", "giải đấu",
+    "nghỉ lễ", "kỳ nghỉ", "dịp lễ", "tết", "giải đấu", "đông đúc", "tấp nập", "nhạc hội", 
+    "cúng đình", "hội", 
 ]
 
 

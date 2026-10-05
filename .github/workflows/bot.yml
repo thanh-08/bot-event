@@ -41,9 +41,21 @@ jobs:
         run: |
           if [ -n "$CHAT_ID" ]; then python main.py reply "$CHAT_ID" "$CMD_TEXT"; else python main.py run; fi
       - name: Lưu cơ sở dữ liệu
-        if: always() && inputs.chat_id == ''
+        if: always()
         run: |
           git config user.name "event-bot"
           git config user.email "event-bot@users.noreply.github.com"
-          git add data/events.db data/events.json
-          git diff --cached --quiet || (git commit -m "cập nhật dữ liệu" && git push)
+          git add -A data
+          if git diff --cached --quiet; then
+            echo "Không có thay đổi để lưu"
+            exit 0
+          fi
+          git commit -m "cập nhật dữ liệu"
+          for i in 1 2 3 4 5; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            echo "Lần $i chưa đẩy được, thử lại..."
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
+          echo "Không lưu được dữ liệu sau 5 lần thử"
+          exit 1

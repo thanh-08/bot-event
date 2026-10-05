@@ -47,8 +47,8 @@ EVENT_KEYWORDS = [
     "pháo hoa", "countdown", "đại nhạc hội", "đêm nhạc", "concert", "festival", "hội chợ",
     "triển lãm", "giải chạy", "marathon", "lễ kỷ niệm", "đua ghe", "ngày hội", "hội nghị",
     "nghỉ lễ", "kỳ nghỉ", "dịp lễ", "tết", "giải đấu", "đông đúc", "tấp nập", "nhạc hội", 
-    "cúng đình", "hội", "liveshow", "live concert", "đêm diễn", "mở bán vé", "bán vé", "fan meeting",
-    "tour diễn", "công diễn",
+    "cúng đình", "hội", "liveshow", "live concert", "đêm diễn", "mở bán vé", "bán vé", 
+    "fan meeting", "tour diễn", "công diễn",
 ]
 
 

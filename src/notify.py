@@ -73,12 +73,13 @@ def format_event(ev):
     scale = []
     if ev.get("attendance"):
         scale.append(f"~{ev['attendance']:,} người".replace(",", "."))
+    else:
+        scale.append("chưa rõ số lượng người")
     if ev.get("fireworks"):
         scale.append("có bắn pháo hoa")
     if ev.get("concert"):
         scale.append("có đại nhạc hội")
-    if scale:
-        lines.append("Quy mô: " + " · ".join(scale))
+    lines.append("Quy mô: " + " · ".join(scale))
     if why and label != "THẤP":
         lines.append("Ưu tiên mạng: " + "; ".join(why))
     urls = json.loads(ev["urls"]) if isinstance(ev.get("urls"), str) else (ev.get("urls") or [])

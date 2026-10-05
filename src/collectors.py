@@ -19,7 +19,7 @@ def load_sources():
     with open("sources.yaml", encoding="utf-8") as f:
         sources = yaml.safe_load(f)["sources"]
     for p in PROVINCES:
-        q = urllib.parse.quote(f"lễ hội OR sự kiện OR pháo hoa OR đại nhạc hội OR concert OR liveshow OR "đêm nhạc" {p} when:14d")
+        q = urllib.parse.quote(f"lễ hội OR sự kiện OR pháo hoa OR đại nhạc hội OR concert OR liveshow OR đêm nhạc {p} when:14d")
         sources.append({
             "name": f"Google News - {p}",
             "url": f"https://news.google.com/rss/search?q={q}&hl=vi&gl=VN&ceid=VN:vi",

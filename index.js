@@ -98,15 +98,23 @@ async function dispatchExcel(env, chatId, text) {
   return r.status === 204;
 }
 
+// Giới hạn /excel: mỗi chat 1 lần / 60 giây (lưu trong bộ nhớ của Worker, chỉ mang tính hạn chế lạm dụng)
+const lastExcel = new Map();
+
 async function handle(env, msg) {
   const chatId = msg.chat.id;
   const text = (msg.text || "").trim();
-  const allowed = (env.TELEGRAM_CHAT_IDS || "").split(",").map((x) => x.trim()).filter(Boolean);
-  if (allowed.length && !allowed.includes(String(chatId))) return;     // chỉ phục vụ các chat đã khai báo
   try {
     if (strip(text.split(/\s+/)[0].split("@")[0]) === "/excel") {
+      const now = Date.now();
+      if (now - (lastExcel.get(chatId) || 0) < 60000) {
+        await send(env, chatId, "Bạn vừa yêu cầu file Excel, vui lòng đợi khoảng 1 phút rồi thử lại.");
+        return;
+      }
+      lastExcel.set(chatId, now);
+      if (lastExcel.size > 500) lastExcel.clear();
       await send(env, chatId, "Đang tạo file Excel, khoảng 1 phút sẽ gửi vào đây...");
-      if (!(await dispatchExcel(env, chatId, text))) await send(env, chatId, "Không gọi được GitHub Actions để tạo Excel (kiểm tra GITHUB_TOKEN).");
+      if (!(await dispatchExcel(env, chatId, text))) await send(env, chatId, "Không tạo được file Excel lúc này, thử lại sau ít phút.");
       return;
     }
     await send(env, chatId, await answer(env, text));

@@ -106,7 +106,7 @@ def build(kind, arg=None, out_path=None, c=None, today=None):
         s_date = date.fromisoformat(ev["start_date"])
         e_date = date.fromisoformat(ev["end_date"]) if ev.get("end_date") else s_date
         vals = [n, s_date, e_date, ev["province"], ev["name"], ev.get("venue") or "", ev.get("time_text") or "",
-                ev.get("attendance"), "Có" if ev.get("fireworks") else "", "Có" if ev.get("concert") else "",
+                ev.get("attendance") or "Chưa rõ", "Có" if ev.get("fireworks") else "", "Có" if ev.get("concert") else "",
                 pname, "; ".join(why), len(urls), urls[0] if urls else ""]
         for i, v in enumerate(vals, 1):
             cell = ws.cell(r, i, v)

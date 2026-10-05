@@ -14,7 +14,7 @@ from datetime import timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 
-from common import (MIN_ATTENDANCE, load_env, now_vn, has_event_kw, has_date_hint, find_province, is_big, strip_accents, PROVINCES)  # noqa: E402
+from common import (load_env, now_vn, has_event_kw, has_date_hint, find_province, is_big, strip_accents, PROVINCES)  # noqa: E402
 import collectors, extract, db, notify, report  # noqa: E402
 
 MAX_EXAMINE_PER_RUN = 80      # giới hạn số bài mở ra đọc mỗi lần chạy (để chạy nhanh)
@@ -141,7 +141,7 @@ def collect(c):
         event_id, is_new = db.upsert_event(c, ev, final_url)
         new_events += is_new
         row = db.get_event(c, event_id)
-        if is_big(row) and (row.get("attendance") or 0) >= MIN_ATTENDANCE and not row["alerted"]:
+        if is_big(row) and not row["alerted"]:
             notify.broadcast(notify.format_alert(row))
             db.set_alerted(c, event_id)
 

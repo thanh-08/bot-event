@@ -1,0 +1,11 @@
+name = "event-bot"
+main = "index.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+# Đổi <người-dùng>/<repo> cho đúng. Repo public thì raw.githubusercontent.com đọc được không cần token.
+EVENTS_URL = "https://raw.githubusercontent.com/<người-dùng>/<repo>/main/data/events.json"
+GITHUB_REPO = "<người-dùng>/<repo>"
+
+# Secret (KHÔNG ghi vào file này), đặt bằng: npx wrangler secret put <TÊN>
+#   TELEGRAM_TOKEN, TELEGRAM_CHAT_IDS, WEBHOOK_SECRET (chuỗi ngẫu nhiên tự đặt), GITHUB_TOKEN (chỉ quyền Actions: Read and write)

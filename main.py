@@ -4,11 +4,12 @@ Cách chạy:
   python main.py check    kiểm tra các nguồn RSS có hoạt động không
   python main.py test     gửi 1 tin nhắn thử để kiểm tra token/chat_id
   python main.py run      thu thập + cảnh báo + trả lời lệnh + gửi bản tin 07:00 (mặc định)
+  python main.py reply <chat_id> /excel [...]   tạo Excel và gửi cho chat_id (Worker gọi)
   python main.py digest   gửi bản tin ngay lập tức
   python main.py export week [YYYY-MM-DD]   xuất Excel 7 ngày kể từ ngày đó (mặc định hôm nay)
   python main.py export month [YYYY-MM]     xuất Excel cả tháng (không ghi tháng: 30 ngày tới)
 """
-import os, sys, traceback
+import os, sys, json, traceback
 from datetime import timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
@@ -220,7 +221,22 @@ def send_excel(c, chat_id, text):
     notify.send_document(chat_id, path, f"Danh sách sự kiện ({n} sự kiện). Mở bằng Excel.")
 
 
+def export_json(c):
+    """Xuất data/events.json cho Cloudflare Worker (trả lời lệnh tức thời, không cần chạy Actions)."""
+    from common import PROVINCES
+    d = now_vn().date()
+    rows = db.upcoming(c, (d - timedelta(days=1)).isoformat(), (d + timedelta(days=365)).isoformat())
+    evs = [{"start": r["start_date"], "end": r["end_date"] or r["start_date"], "province": r["province"],
+            "search": strip_accents(f"{r['name']} {r['venue'] or ''} {r['province']}"),
+            "text": notify.format_event(r)} for r in rows]
+    with open("data/events.json", "w", encoding="utf-8") as f:
+        json.dump({"updated": now_vn().isoformat(), "provinces": PROVINCES, "events": evs}, f, ensure_ascii=False)
+    print(f"Đã xuất data/events.json ({len(evs)} sự kiện)")
+
+
 def handle_commands(c):
+    if os.environ.get("USE_WEBHOOK"):      # lệnh đã do Cloudflare Worker trả lời; getUpdates sẽ báo lỗi 409 nếu webhook đang bật
+        return
     offset = int(db.get_meta(c, "tg_offset") or 0)
     data = notify.tg("getUpdates", offset=offset, timeout=0)
     for u in data.get("result", []):
@@ -266,8 +282,11 @@ def main():
         print(f"Đã xuất {n} sự kiện ra file: {path}")
         return
     c = db.conn()
+    if mode == "reply":                    # python main.py reply <chat_id> /excel thang ... (do Worker gọi qua workflow_dispatch)
+        send_excel(c, sys.argv[2], " ".join(sys.argv[3:]))
+        return
     errors = 0
-    steps = {"run": [collect, handle_commands, maybe_digest], "digest": [send_digest]}[mode]
+    steps = {"run": [collect, export_json, handle_commands, maybe_digest], "digest": [send_digest]}[mode]
     for step in steps:
         try:
             step(c)

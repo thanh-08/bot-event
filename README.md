@@ -94,6 +94,28 @@ Nếu dịch vụ bên ngoài hoặc token gặp sự cố, bot tự quay về l
 `concurrency` nên các lượt chạy xếp hàng tuần tự và bản tin vẫn chỉ gửi một lần mỗi ngày (ngày gửi gần nhất được lưu trong cơ sở dữ liệu).
 Mỗi lượt chạy thu thập tin trước rồi mới gửi bản tin, nên bản tin 07:00 thường đến sau 3 đến 5 phút.
 
+## Trả lời lệnh tức thời (Cloudflare Worker)
+
+GitHub Actions chỉ chạy theo lượt nên lệnh phải chờ lượt kế tiếp. Để bot trả lời trong ~1 giây, Telegram được cấu hình
+gọi thẳng (webhook) tới một Cloudflare Worker miễn phí (100.000 yêu cầu/ngày). Worker đọc `data/events.json`
+(Actions cập nhật sau mỗi lượt thu thập) nên không cần máy chủ chạy liên tục. Việc thu thập, cảnh báo và bản tin 07:00 vẫn do Actions làm.
+Riêng `/excel` cần tạo file nên Worker báo "đang tạo" rồi gọi Actions gửi file sau khoảng 1 phút.
+
+Thiết lập (khoảng 10 phút):
+
+1. Tạo tài khoản miễn phí tại cloudflare.com. Sửa `worker/wrangler.toml`: thay `<người-dùng>/<repo>` bằng repo của bạn.
+2. Trong thư mục `worker/`, chạy `npx wrangler login`, rồi đặt từng secret bằng `npx wrangler secret put <TÊN>`:
+   `TELEGRAM_TOKEN`, `TELEGRAM_CHAT_IDS` (giống GitHub Secrets), `WEBHOOK_SECRET` (chuỗi ngẫu nhiên tự đặt, tối đa 256 ký tự gồm chữ, số, `_`, `-`),
+   `GITHUB_TOKEN` (fine-grained token, chỉ repo này, quyền **Actions: Read and write**; có thể dùng lại token của cron-job.org).
+3. `npx wrangler deploy`, lấy địa chỉ dạng `https://event-bot.<tên>.workers.dev`.
+4. Đăng ký webhook (một lần; thay 3 giá trị):
+   `curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://event-bot.<tên>.workers.dev&secret_token=<WEBHOOK_SECRET>"`
+5. Chạy tay workflow *event-bot* một lần để sinh `data/events.json`, rồi nhắn `/tuannay` thử.
+
+Lưu ý: khi webhook đang bật, `getUpdates` bị Telegram từ chối (lỗi 409), nên workflow đã đặt `USE_WEBHOOK=1` để bỏ bước đọc lệnh.
+Muốn quay về cách cũ: gọi `.../deleteWebhook` và xóa dòng `USE_WEBHOOK` trong `bot.yml`.
+Dữ liệu lệnh tra cứu mới đến mức lượt thu thập gần nhất (tối đa ~30 phút), kèm bộ nhớ đệm GitHub khoảng 5 phút.
+
 ## Lệnh trên bot
 
 | Lệnh | Ý nghĩa |
@@ -105,7 +127,7 @@ Mỗi lượt chạy thu thập tin trước rồi mới gửi bản tin, nên b
 | `/excel` | Gửi file Excel các sự kiện 7 ngày tới |
 | `/excel thang` | File Excel 30 ngày tới; `/excel thang 2026-11` cho cả tháng 11/2026 |
 
-Trên GitHub Actions, lệnh được trả lời ở lượt chạy kế tiếp (độ trễ tối đa khoảng 30 phút, có thể lâu hơn nếu dịch vụ hẹn giờ gặp sự cố).
+Khi dùng Cloudflare Worker, lệnh được trả lời gần như tức thì (riêng `/excel` mất khoảng 1 phút). Nếu không dùng Worker, lệnh được trả lời ở lượt Actions kế tiếp.
 
 ## Mức ưu tiên đối với mạng lưới
 
@@ -156,7 +178,7 @@ Trên GitHub Actions, file này được commit về repo sau mỗi lượt đ�
 
 ## Giới hạn đã biết
 
-- Lệnh trên GitHub Actions trả lời trễ tối đa khoảng 30 phút. Bản tin 07:00 thường đến lúc 07:03 đến 07:05; nếu kích hoạt ngoài gặp sự cố thì có thể trễ nhiều hơn (xem phần lịch chạy kép).
+- Nếu không dùng Cloudflare Worker, lệnh trên GitHub Actions trả lời trễ tối đa khoảng 30 phút. Bản tin 07:00 thường đến lúc 07:03 đến 07:05; nếu kích hoạt ngoài gặp sự cố thì có thể trễ nhiều hơn (xem phần lịch chạy kép).
 - Chưa lấy được dữ liệu từ cổng UBND, Sở VH-TT-DL và các trang bán vé (xem phần nguồn dữ liệu).
 - Gói AI miễn phí có hạn mức nhất định; khi hết hạn mức, các bài còn lại được xử lý ở các lượt sau.
 - Một số bài không nêu ngày cụ thể nên bị bỏ qua; chưa mở rộng ra các tỉnh miền Nam ngoài 8 tỉnh/thành trên.
@@ -165,7 +187,8 @@ Trên GitHub Actions, file này được commit về repo sau mỗi lượt đ�
 ## Cấu trúc thư mục
 
 ```
-main.py                 điểm vào: run, check, test, digest, export
+main.py                 điểm vào: run, check, test, digest, export, reply
+worker/                 Cloudflare Worker trả lời lệnh tức thời
 src/common.py           tỉnh, từ khóa, mức ưu tiên
 src/collectors.py       đọc RSS / quét trang / Google News
 src/extract.py          trích xuất bằng AI (có dự phòng quy tắc đơn giản)

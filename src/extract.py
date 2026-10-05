@@ -18,7 +18,7 @@ Chỉ trả về một đối tượng JSON, không viết thêm gì khác, gồ
 - time_text: giờ bắt đầu dạng chữ (ví dụ "19:00") hoặc null
 - attendance: số người dự kiến (số nguyên) hoặc null (KHÔNG đoán). Nếu bài chỉ dùng cách nói ước lượng thì quy đổi theo mức thấp nhất của cách nói đó: "hàng trăm nghìn" = 100000, "hàng chục nghìn/ngàn" = 20000, "hàng vạn" = 10000, "hàng nghìn/ngàn" = 2000. "Biển người", "đông người", "đông đảo" mà không có con số thì để null
 - fireworks: true nếu có bắn pháo hoa
-- concert: true nếu có đại nhạc hội / đêm nhạc lớn
+- concert: true nếu là concert/liveshow/đại nhạc hội của nghệ sĩ nổi tiếng, hoặc diễn ra ở sân vận động, quảng trường hay khu đô thị lớn
 
 Tiêu đề: {title}
 Nội dung: {text}"""

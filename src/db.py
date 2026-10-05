@@ -1,5 +1,5 @@
 import os, re, json, sqlite3, difflib
-from common import strip_accents, MIN_ATTENDANCE
+from common import strip_accents, is_visible
 
 DB_PATH = os.environ.get("DB_PATH", "data/events.db")
 
@@ -114,5 +114,5 @@ def upcoming(c, d_from, d_to):
     """Sự kiện có khoảng ngày giao với [d_from, d_to] (định dạng YYYY-MM-DD)."""
     rows = c.execute(
         "SELECT * FROM events WHERE COALESCE(end_date,start_date) >= ? AND start_date <= ? "
-        "AND COALESCE(attendance,0) >= ? ORDER BY start_date, name", (d_from, d_to, MIN_ATTENDANCE)).fetchall()
-    return [dict(r) for r in rows]
+        "ORDER BY start_date, name", (d_from, d_to)).fetchall()
+    return [e for e in (dict(r) for r in rows) if is_visible(e)]

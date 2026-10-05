@@ -21,7 +21,7 @@ bản tin 07:00 mỗi ngày (7 ngày tới), cảnh báo riêng khi có sự ki�
 ```
 Nguồn tin (báo, Google News) -> thu thập -> lọc từ khóa + tỉnh -> AI trích xuất -> khử trùng + lưu SQLite
                                                                                       |
-Điện thoại <- Telegram <- bản tin 07:00 / cảnh báo / lệnh / file Excel <--------------+
+             Điện thoại <- Telegram <- bản tin 07:00 / cảnh báo / lệnh <--------------+
 ```
 
 Bot chạy tự động trên **GitHub Actions** nên không phụ thuộc máy cá nhân.

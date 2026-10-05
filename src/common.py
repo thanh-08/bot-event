@@ -3,8 +3,8 @@ from datetime import date, datetime, timezone, timedelta
 
 VN_TZ = timezone(timedelta(hours=7))
 BIG_ATTENDANCE = 10000
-# Chỉ hiển thị/cảnh báo sự kiện có quy mô nêu rõ từ ngưỡng này trở lên (bản tin, lệnh, Excel, cảnh báo).
-# Đặt 0 để hiển thị tất cả sự kiện như trước. Sự kiện không nêu số người vẫn được lưu nhưng bị ẩn.
+# Bản tin, lệnh tra cứu và Excel chỉ hiển thị sự kiện lớn (xem is_visible). Đặt 0 để hiển thị tất cả sự kiện.
+# Sự kiện bị ẩn vẫn được lưu trong cơ sở dữ liệu.
 MIN_ATTENDANCE = 10000
 
 
@@ -100,6 +100,16 @@ BIG_FESTIVALS = ["nguyễn trung trực", "bà chúa xứ", "vía bà", "ok om b
 DENSE_PROVINCES = {"TP. Hồ Chí Minh": 1}
 
 PRIORITY_NAMES = {"CAO": "Cao", "TB": "Trung bình", "THẤP": "Thấp"}
+
+
+def is_visible(ev):
+    """Sự kiện có được hiển thị không: từ MIN_ATTENDANCE người, hoặc có pháo hoa, hoặc đại nhạc hội,
+    hoặc là lễ hội truyền thống lớn (BIG_FESTIVALS) dù báo không nêu số người."""
+    if MIN_ATTENDANCE <= 0:
+        return True
+    if (ev.get("attendance") or 0) >= MIN_ATTENDANCE or ev.get("fireworks") or ev.get("concert"):
+        return True
+    return bool(_count(strip_accents(f"{ev.get('name') or ''} {ev.get('venue') or ''}"), BIG_FESTIVALS))
 
 
 def is_big(ev):

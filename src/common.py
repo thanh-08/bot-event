@@ -52,7 +52,7 @@ EVENT_KEYWORDS = [
     "fan meeting", "tour diễn", "công diễn",
     # đại lễ tôn giáo, hành hương
     "hành hương", "đại lễ", "thánh lễ", "đền thánh", "cung hiến", "giáo phận", "giáo xứ",
-    "phật đản", "vu lan", "rước kiệu",
+    "phật đản", "vu lan", "rước kiệu", "lễ khánh thành", "đức mẹ",
     # cách nói về lượng người tụ tập đông
     "đông đúc", "tấp nập", "đông người", "đông đảo", "biển người", "nườm nượp", "chật kín",
     "lượng khách lớn", "thu hút hàng",

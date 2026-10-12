@@ -25,6 +25,13 @@ def load_sources():
             "url": f"https://news.google.com/rss/search?q={q}&hl=vi&gl=VN&ceid=VN:vi",
             "province": p,
         })
+        # Truy vấn thứ hai: đại lễ tôn giáo, hành hương, lễ khánh thành (báo thường không dùng chữ "lễ hội")
+        q2 = urllib.parse.quote(f"đại lễ OR hành hương OR thánh lễ OR cung hiến OR \"lễ khánh thành\" OR Phật đản OR Vu Lan {p} when:14d")
+        sources.append({
+            "name": f"Google News (đại lễ) - {p}",
+            "url": f"https://news.google.com/rss/search?q={q2}&hl=vi&gl=VN&ceid=VN:vi",
+            "province": p,
+        })
     return sources
 
 

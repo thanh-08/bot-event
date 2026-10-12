@@ -20,6 +20,22 @@ def chat_ids():
     return [x.strip() for x in raw.split(",") if x.strip()]
 
 
+def subscriber_ids():
+    """Người tự đăng ký bằng /start hoặc /dangky (Cloudflare Worker giữ danh sách). Lỗi thì bỏ qua, vẫn gửi cho TELEGRAM_CHAT_IDS."""
+    url = os.environ.get("WORKER_URL", "").rstrip("/")
+    key = os.environ.get("WEBHOOK_SECRET", "")
+    if not url or not key:
+        return []
+    try:
+        r = requests.get(f"{url}/subscribers", headers={"Authorization": f"Bearer {key}"}, timeout=15)
+        if r.status_code == 200:
+            return [str(x) for x in r.json().get("ids", [])]
+        print(f"Không lấy được danh sách đăng ký (HTTP {r.status_code})")
+    except Exception as e:
+        print(f"Không lấy được danh sách đăng ký: {type(e).__name__}")
+    return []
+
+
 def send(chat_id, text):
     """Gửi tin, tự chia nhỏ nếu dài hơn giới hạn của Telegram (4096 ký tự)."""
     parts, cur = [], ""
@@ -45,8 +61,12 @@ def send_document(chat_id, path, caption=""):
         raise RuntimeError(f"Telegram sendDocument lỗi {r.status_code}: {r.text[:200]}")
 
 
-def broadcast(text):
-    for cid in chat_ids():
+def broadcast(text, subscribers=False):
+    """Gửi cho TELEGRAM_CHAT_IDS (quản trị). subscribers=True: gửi thêm cho người đã tự đăng ký (bản tin, cảnh báo sự kiện)."""
+    ids = chat_ids()
+    if subscribers:
+        ids += [x for x in subscriber_ids() if x not in ids]
+    for cid in ids:
         try:
             send(cid, text)
         except Exception as e:

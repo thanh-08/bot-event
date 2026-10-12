@@ -142,7 +142,7 @@ def collect(c):
         new_events += is_new
         row = db.get_event(c, event_id)
         if is_big(row) and not row["alerted"]:
-            notify.broadcast(notify.format_alert(row))
+            notify.broadcast(notify.format_alert(row), subscribers=True)
             db.set_alerted(c, event_id)
 
     if collectors.gn_blocked() and not (until and now_vn().isoformat() < until):
@@ -165,7 +165,7 @@ def send_digest(c):
     now = now_vn()
     d = now.date()
     evs = db.upcoming(c, d.isoformat(), (d + timedelta(days=7)).isoformat())
-    notify.broadcast(notify.format_digest(evs, now))
+    notify.broadcast(notify.format_digest(evs, now), subscribers=True)
 
 
 def maybe_digest(c):

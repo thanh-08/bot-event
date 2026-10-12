@@ -37,6 +37,8 @@ jobs:
           TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WORKER_URL: ${{ secrets.WORKER_URL }}          # địa chỉ Worker, để lấy danh sách người đăng ký
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
           USE_WEBHOOK: "1"                       # lệnh do Cloudflare Worker trả lời, Actions không đọc getUpdates nữa
         run: |
           if [ -n "$CHAT_ID" ]; then python main.py reply "$CHAT_ID" "$CMD_TEXT"; else python main.py run; fi

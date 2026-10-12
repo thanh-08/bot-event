@@ -33,7 +33,7 @@ def strip_accents(s):
 PROVINCES = {
     "TP. Hồ Chí Minh": ["tp.hcm", "tphcm", "tp hcm", "thành phố hồ chí minh", "sài gòn",
                         "bình dương", "thủ dầu một", "bà rịa", "vũng tàu", "côn đảo"],
-    "Đồng Nai": ["biên hòa", "bình phước", "đồng xoài"],
+    "Đồng Nai": ["biên hòa", "bình phước", "đồng xoài", "núi cúi", "trị an", "xuân lộc", "long thành"],
     "Tây Ninh": ["long an", "tân an", "núi bà đen"],
     "An Giang": ["kiên giang", "phú quốc", "rạch giá", "hà tiên", "châu đốc", "long xuyên"],
     "Đồng Tháp": ["tiền giang", "mỹ tho", "cao lãnh", "sa đéc"],
@@ -43,12 +43,21 @@ PROVINCES = {
 }
 
 EVENT_KEYWORDS = [
+    # loại sự kiện
     "lễ hội", "vía bà", "ok om bok", "chôl chnăm thmây", "cúng đình", "khai mạc", "bế mạc",
-    "pháo hoa", "countdown", "đại nhạc hội", "đêm nhạc", "concert", "festival", "hội chợ",
+    "pháo hoa", "countdown", "đại nhạc hội", "nhạc hội", "đêm nhạc", "concert", "festival", "hội chợ",
     "triển lãm", "giải chạy", "marathon", "lễ kỷ niệm", "đua ghe", "ngày hội", "hội nghị",
-    "nghỉ lễ", "kỳ nghỉ", "dịp lễ", "tết", "giải đấu", "đông đúc", "tấp nập", "nhạc hội", 
-    "cúng đình", "hội", "liveshow", "live concert", "đêm diễn", "mở bán vé", "bán vé", 
+    "nghỉ lễ", "kỳ nghỉ", "dịp lễ", "tết", "giải đấu",
+    "liveshow", "live concert", "đêm diễn", "mở bán vé", "bán vé",
     "fan meeting", "tour diễn", "công diễn",
+    # đại lễ tôn giáo, hành hương
+    "hành hương", "đại lễ", "thánh lễ", "đền thánh", "cung hiến", "giáo phận", "giáo xứ",
+    "phật đản", "vu lan", "rước kiệu",
+    # cách nói về lượng người tụ tập đông
+    "đông đúc", "tấp nập", "đông người", "đông đảo", "biển người", "nườm nượp", "chật kín",
+    "lượng khách lớn", "thu hút hàng",
+    "hàng chục nghìn", "hàng chục ngàn", "hàng trăm nghìn", "hàng trăm ngàn", "hàng vạn",
+    "hàng nghìn", "hàng ngàn",
 ]
 
 
@@ -96,7 +105,7 @@ HOTSPOTS = [
 
 # Lễ hội truyền thống/tín ngưỡng thường rất đông người dù báo không nêu con số.
 BIG_FESTIVALS = ["nguyễn trung trực", "bà chúa xứ", "vía bà", "ok om bok", "nghinh ông", "chôl chnăm thmây",
-                 "chol chnam thmay", "sene dolta", "bà đen", "đua ghe ngo", "cúng đình", "kỳ yên"]
+                 "chol chnam thmay", "sene dolta", "bà đen", "đua ghe ngo", "cúng đình", "kỳ yên", "countdown", "hành hương"]
 
 # Đô thị lớn, mật độ người dùng cao: cộng thêm điểm.
 DENSE_PROVINCES = {"TP. Hồ Chí Minh": 1}
